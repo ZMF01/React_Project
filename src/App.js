@@ -1,10 +1,11 @@
 import React from 'react';
+import './App.css';
 import customers from './memdb.js'
 
 function log(message){console.log(message);}
 
 export function App(params) {
-  // let blankCustomer = { "id": -1, "name": "", "email": "", "password": "" };
+  let blankCustomer = { "id": -1, "name": "", "email": "", "password": "" };
   let formObject = customers[0];
   let mode = (formObject.id >= 0) ? 'Update' : 'Add';
 
@@ -14,6 +15,7 @@ export function App(params) {
 
   const handleListClick = function(item){
     log("in handleListClick()");
+    // setFormObject(item);
   }  
 
   const handleInputChange = function (event) {
@@ -49,6 +51,7 @@ export function App(params) {
               (item, index) => {
                 return (<tr key={item.id} 
                 onClick={()=>handleListClick(item)} 
+                className={(item.id === formObject.id)?'selected': ''}
                 >
                   <td>{item.name}</td>
                   <td>{item.email}</td>
