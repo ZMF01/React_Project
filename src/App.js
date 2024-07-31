@@ -1,37 +1,69 @@
 import React from 'react';
+import { useState } from 'react';
+import { useEffect } from 'react';
 import './App.css';
 import customers from './memdb.js'
+import { getAll, post, put, deleteById } from './memdb.js'
 
 function log(message){console.log(message);}
 
 export function App(params) {
   let blankCustomer = { "id": -1, "name": "", "email": "", "password": "" };
-  let formObject = customers[0];
+  //let formObject = customers[0];
+  const [customers, setCustomers] = useState([]);
+  const [formObject, setFormObject] = useState(blankCustomer);
   let mode = (formObject.id >= 0) ? 'Update' : 'Add';
+  const [refreshFlag, setRefreshFlag] = useState(0);
 
-  // const getCustomers =  function(){
-  //   log("in getCustomers()");
-  // }
+
+  // Update Customers with the useEffect Hook
+  const getCustomers =  function(){
+    //log("in getCustomers()");
+    setCustomers(getAll());
+  }
+  useEffect(() => { getCustomers() }, [refreshFlag]);
 
   const handleListClick = function(item){
-    log("in handleListClick()");
-    // setFormObject(item);
-  }  
+    //log("in handleListClick()");
+    setFormObject(item);
+  } 
+
 
   const handleInputChange = function (event) {
-    log("in handleInputChange()");
+    //log("in handleInputChange()");
+    const name = event.target.name;
+    const value = event.target.value;
+    let newFormObject = {...formObject}
+    newFormObject[name] = value;
+    setFormObject(newFormObject);
   }
 
   let onCancelClick = function () {
-    log("in onCancelClick()");
+   // log("in onCancelClick()");
+   setFormObject(blankCustomer);
   }
 
+  // Implement the Delete Button
   let onDeleteClick = function () {
-    log("in onDeleteClick()");
+    //log("in onDeleteClick()");
+    if(formObject.id >= 0){
+      deleteById(formObject.id);
+      setRefreshFlag(refreshFlag+1);
+    }
+    setFormObject(blankCustomer);
   }
 
   let onSaveClick = function () {
-    log("in onSaveClick()");
+    //log("in onSaveClick()");
+    if (mode === 'Add') {
+      post(formObject);
+      setRefreshFlag(refreshFlag+1);
+    }
+    if (mode === 'Update') {
+      put(formObject.id, formObject);
+      setRefreshFlag(refreshFlag+1);
+    }
+    setFormObject(blankCustomer);
   }
 
   return (
@@ -47,12 +79,11 @@ export function App(params) {
             </tr>
           </thead>
           <tbody>
-            {customers.map(
+          {customers.map(
               (item, index) => {
                 return (<tr key={item.id} 
                 onClick={()=>handleListClick(item)} 
-                className={(item.id === formObject.id)?'selected': ''}
-                >
+                className={ (item.id === formObject.id )?'selected': ''}>
                   <td>{item.name}</td>
                   <td>{item.email}</td>
                   <td>{item.password}</td>
@@ -75,7 +106,7 @@ export function App(params) {
                 type="text"
                 name="name"
                 value={formObject.name}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e)}
                 placeholder="Customer Name"
                 required /></td>
             </tr>
